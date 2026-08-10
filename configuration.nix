@@ -1,4 +1,4 @@
-{ pkgs, modulesPath, ... }:
+{ pkgs, modulesPath, lib, ... }:
 
 {
   imports = [
@@ -24,13 +24,13 @@
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 80 ];
+    allowedTCPPorts = [ 80 443 ];
 
     extraCommands = ''
-      # Only allow SSH from LAN
-      iptables -A nixos-fw -p tcp --dport 22 -s 192.168.1.0/24 -j ACCEPT
-      ip6tables -A nixos-fw -p tcp --dport 22 -s fe80::/10 -j ACCEPT
-      ip6tables -A nixos-fw -p tcp --dport 22 -s fd00::/8 -j ACCEPT
+      # Only allow SSH and Netdata from LAN
+      iptables -A nixos-fw -p tcp -m multiport --dports 22,19999 -s 192.168.1.0/24 -j ACCEPT
+      ip6tables -A nixos-fw -p tcp -m multiport --dports 22,19999 -s fe80::/10 -j ACCEPT
+      ip6tables -A nixos-fw -p tcp -m multiport --dports 22,19999 -s fd00::/8 -j ACCEPT
     '';
   };
 
@@ -44,6 +44,62 @@
       AllowUsers = [ "mish" ];
       MaxAuthTries = 3;
       PerSourcePenalties = "crash:3600s authfail:3600s max:86400s";
+    };
+  };
+
+  environment.variables = {
+    EDITOR = "micro";
+    VISUAL = "micro";
+  };
+
+  services.netdata = {
+    enable = true;
+    config.global = {
+      "memory mode" = "ram";
+      "debug log" = "none";
+      "access log" = "none";
+      "error log" = "syslog";
+    };
+    package = pkgs.netdata.override {
+      withCloudUi = true;
+    };
+  };
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+    "netdata"
+  ];
+
+  # Nginx!
+  security.acme.acceptTerms = true;
+  security.acme.defaults.email = "postmaster@slevel.xyz";
+
+  boot.kernel.sysctl = {
+    "net.ipv4.ip_forward" = 1;
+    "net.ipv6.conf.all.forwarding" = 1;
+  };
+
+  services.nginx = {
+    enable = true;
+    recommendedGzipSettings = true;
+    recommendedOptimisation = true;
+    recommendedProxySettings = true;
+    recommendedTlsSettings = true;
+    virtualHosts = {
+      "files.slevel.xyz" = {
+        default = true;
+        quic = true;
+        http3 = true;
+        addSSL = true;
+        enableACME = true;
+
+        root = "/var/www/files";
+        locations."/" = {
+          extraConfig = ''
+            autoindex on;
+            autoindex_exact_size off; # Human-readable file sizes
+            autoindex_localtime on;   # Local time zone timestamps
+          '';
+        };
+      };
     };
   };
 }
