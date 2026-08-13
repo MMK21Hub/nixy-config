@@ -10,6 +10,7 @@
   environment.systemPackages = [
     pkgs.micro
     pkgs.git
+    pkgs.lazygit
   ];
 
   users.users.mish = {
