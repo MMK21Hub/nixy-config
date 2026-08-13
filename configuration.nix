@@ -4,8 +4,8 @@
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
-
   system.stateVersion = "26.11";
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   environment.systemPackages = [
     pkgs.micro
@@ -103,4 +103,8 @@
       };
     };
   };
+
+  # Copyparty!
+  #inputs.copyparty.url = "github:9001/copyparty";
+  
 }
