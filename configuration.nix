@@ -101,10 +101,31 @@
           '';
         };
       };
+      "streets.slevel.xyz" = {
+        quic = true;
+        http3 = true;
+        addSSL = true;
+        enableACME = true;
+        root = "/var/www/streets-gl";
+        locations."/" = {
+          tryFiles = "$uri $uri/ /index.html";
+        };
+      };
+      "tiles.streets.slevel.xyz" = {
+        quic = true;
+        http3 = true;
+        addSSL = true;
+        enableACME = true;
+        locations."/" = {
+          proxyPass = "http://localhost:8080";
+        };
+      };
     };
   };
 
   # Copyparty!
   #inputs.copyparty.url = "github:9001/copyparty";
-  
+
+  # Streets.gl!
+  virtualisation.docker.enable = true;
 }
