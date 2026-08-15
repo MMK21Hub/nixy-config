@@ -18,7 +18,6 @@
           ({ pkgs, ... }: {
             nixpkgs.overlays = [ copyparty.overlays.default ];
             environment.systemPackages = [ pkgs.copyparty ];
-            services.copyparty.enable = true;
           })
         ];
       };
