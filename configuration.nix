@@ -161,6 +161,26 @@
       rproxy = 1;
       xff-hdr = "X-Forwarded-For";
     };
+    accounts = {
+      mish.passwordFile = "/var/lib/copyparty/passwords/mish";
+    };
+    volumes = {
+      "/" = {
+        path = "/var/www/copyparty";
+        access = {
+          r = "*"; # everyone can read
+          A = [ "mish" ]; # mish has all perms
+        };
+        flags = {
+          magic = true; # enable unix-style filetype detection
+          scan = 60; # scan for new files every 60sec
+          e2d = true; # enable upload database
+          e2t = true; # multimedia indexing
+          e2dsa = true; # scans all folders for new files on startup
+          nohash = "\.iso$"; # skips hashing file contents if path matches *.iso
+        };
+      };
+    };
   };
   users.users.copyparty = {
     extraGroups = [ "nginx" ];
