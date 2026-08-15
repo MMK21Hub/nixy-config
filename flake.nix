@@ -6,12 +6,20 @@
     copyparty.url = "github:9001/copyparty";
   };
 
-  outputs = { self, nixpkgs, ... }@inputs: {
+  outputs = { self, nixpkgs, copyparty, ... }@inputs: {
     nixosConfigurations = {
       nixy = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           ./configuration.nix
+
+          # Copyparty!
+          copyparty.nixosModules.default
+          ({ pkgs, ... }: {
+            nixpkgs.overlays = [ copyparty.overlays.default ];
+            environment.systemPackages = [ pkgs.copyparty ];
+            services.copyparty.enable = true;
+          })
         ];
       };
     };
