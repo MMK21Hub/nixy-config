@@ -180,6 +180,18 @@
           nohash = "\.iso$"; # skips hashing file contents if path matches *.iso
         };
       };
+      "/dump" = {
+        path = "/var/www/file-dump";
+        access = {
+          g = "*"; # everyone can get files but not list directory
+          A = [ "mish" ]; # admin
+        };
+        flags = {
+          fk = 4; # use filekeys (of length 4) to prevent brute-forcing file names
+          e2d = true;
+          nohash = "\.iso$";
+        };
+      };
     };
   };
   users.users.copyparty = {
